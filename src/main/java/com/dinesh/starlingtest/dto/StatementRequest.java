@@ -1,4 +1,4 @@
-package com.test.dto;
+package com.dinesh.starlingtest.dto;
 
 import java.time.LocalDate;
 

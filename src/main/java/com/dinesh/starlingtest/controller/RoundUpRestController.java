@@ -1,6 +1,6 @@
-package com.test.controller;
+package com.dinesh.starlingtest.controller;
 
-import com.test.service.RoundUpService;
+import com.dinesh.starlingtest.service.RoundUpService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
