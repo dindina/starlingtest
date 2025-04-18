@@ -41,7 +41,7 @@ This application automatically calculates the round-up amount for your spending 
 
 ### Accessing the Endpoint
 
-Once the application is running, you can trigger the round-up calculation and transfer by sending a `POST` request to the `/roundup/process` endpoint. You will need to provide the `startDate`, `endDate`, and `accountNumber` as query parameters, along with the `goalSavingsId` (which is configured in `application.properties`).
+Once the application is running, you can trigger the round-up calculation and transfer by sending a `POST` request to the `/round-up/process` endpoint. You will need to provide the `startDate`, `endDate`, and `accountNumber` as query parameters, along with the `goalSavingsId` (which is configured in `application.properties`).
 
 Swagger URL : http://localhost:8080/swagger-ui.html
 
