@@ -27,9 +27,11 @@ public class RoundUpService {
     @Value("${starling.api.key}")
     private String apiKey;
 
-    private static final int MAX_RETRIES = 3;
+    @Value("${retry.max-retries}")
+    private int maxRetries;
 
-    private static final Duration RETRY_DELAY = Duration.ofSeconds(2);
+    @Value("${retry.delay-seconds}")
+    private long retryDelaySeconds;
     private final OkHttpClient client = new OkHttpClient();
 
 
@@ -51,23 +53,23 @@ public class RoundUpService {
                 .header("Idempotency-Key", idempotencyKey) // Include idempotency key
                 .build();
 
-        for (int i = 0; i <= MAX_RETRIES; i++) {
+        for (int i = 0; i <= maxRetries; i++) {
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful() || response.code() == 409) { // 409 Conflict might indicate a previous successful request with the same idempotency key
                     System.out.println("Successfully transferred £" + String.format("%.2f", amount) + " (attempt " + (i + 1) + ", idempotency key: " + idempotencyKey + ")");
                     return true;
                 } else {
                     System.err.println("Failed to transfer (attempt " + (i + 1) + "): " + response.code() + " - " + response.body().string());
-                    if (i < MAX_RETRIES && shouldRetry(response.code())) {
-                        Thread.sleep(RETRY_DELAY.toMillis());
+                    if (i < maxRetries && shouldRetry(response.code())) {
+                        Thread.sleep(Duration.ofSeconds(retryDelaySeconds).toMillis());
                     } else {
                         throw new IOException("Failed to transfer after " + (i + 1) + " attempts.");
                     }
                 }
             } catch (IOException e) {
                 System.err.println("Error during transfer call (attempt " + (i + 1) + "): " + e.getMessage());
-                if (i < MAX_RETRIES) {
-                    Thread.sleep(RETRY_DELAY.toMillis());
+                if (i < maxRetries) {
+                    Thread.sleep(Duration.ofSeconds(retryDelaySeconds).toMillis());
                 } else {
                     throw e;
                 }
@@ -93,7 +95,7 @@ public class RoundUpService {
                 .header("Accept", "text/csv")
                 .build();
 
-        for (int i = 0; i <= MAX_RETRIES; i++) {
+        for (int i = 0; i <= maxRetries; i++) {
             try (Response response = client.newCall(httpRequest).execute()) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
@@ -105,16 +107,16 @@ public class RoundUpService {
                     }
                 } else {
                     System.err.println("Failed to download statement (attempt " + (i + 1) + "): " + response.code() + " - " + (response.body() != null ? response.body().string() : "No body"));
-                    if (i < MAX_RETRIES && shouldRetry(response.code())) {
-                        Thread.sleep(RETRY_DELAY.toMillis());
+                    if (i < maxRetries && shouldRetry(response.code())) {
+                        Thread.sleep(Duration.ofSeconds(retryDelaySeconds).toMillis());
                     } else {
                         throw new IOException("Failed to download statement after " + (i + 1) + " attempts.");
                     }
                 }
             } catch (IOException e) {
                 System.err.println("Error during download call (attempt " + (i + 1) + "): " + e.getMessage());
-                if (i < MAX_RETRIES) {
-                    Thread.sleep(RETRY_DELAY.toMillis());
+                if (i < maxRetries) {
+                    Thread.sleep(Duration.ofSeconds(retryDelaySeconds).toMillis());
                 } else {
                     throw e;
                 }
